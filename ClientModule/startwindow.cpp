@@ -9,7 +9,7 @@
 #include "jsonUtility.h"
 #include "editorwindow.h"
 #include "message.h"
-#include <QDesktopWidget>
+//#include <QDesktopWidget>
 
 using json = nlohmann::json;
 using boost::asio::ip::tcp;
@@ -19,7 +19,8 @@ typedef std::deque<message> message_queue;
 StartWindow::StartWindow(QWidget *parent): QMainWindow(parent, Qt::FramelessWindowHint | Qt::WindowSystemMenuHint),
     ui(new Ui::StartWindow), _client(new myClient)
 {
-    QRect screenGeometry = QApplication::desktop()->screenGeometry();
+    //QRect screenGeometry = QApplication::desktop()->screenGeometry();
+    QRect screenGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     double width = screenGeometry.width();
     int minWidth = 1920;
     double scale = width / minWidth;
@@ -61,7 +62,7 @@ void StartWindow::mouseMoveEvent(QMouseEvent *evt){
 void StartWindow::on_LoginButton_clicked(){
     if(_client->getStatus()==false){
         _client ->do_connect();
-        Sleep(1000);
+        sleep(1000);
         qDebug () << "IL SERVER é connesso?--> " <<_client->getStatus();
         if(_client->getStatus()==false){
             //secondo controllo se non sono riuscito a ricollegarmi al server

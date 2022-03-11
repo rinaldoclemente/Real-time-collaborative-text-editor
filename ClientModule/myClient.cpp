@@ -1,5 +1,5 @@
 ﻿#include "myClient.h"
-#include <qtextcodec.h>
+
 #include <QMessageBox>
 #include <QtWidgets/QApplication>
 
@@ -13,7 +13,7 @@ myClient::myClient()
           mail_(""),
           color_("#00ffffff"),
           fullBody(""),
-          crdt(),
+          _crdt(),
           fileVector_(std::vector<File>())
 {
     worker_= std::thread([&](){io_context_.run();}); //boost thread loop start
@@ -52,7 +52,7 @@ void myClient::do_read_header() {
             do_read_body();
         }
         else {
-            qDebug() << ec.message().c_str() << endl;
+            qDebug() << ec.message().c_str() << Qt::endl;
             closeConnection();
         }
     });
@@ -80,7 +80,7 @@ void myClient::do_read_body() {
                     jsonUtility::from_json_resp(jdata_in, db_responseJSON);
 
                     if(db_responseJSON == "LOGIN_OK") {
-                        qDebug() << "Login success" << endl;
+                        qDebug() << "Login success" << Qt::endl;
                         std::string db_usernameLoginJSON;
                         std::string db_colorJSON;
                         std::string db_mailJSON;
@@ -94,11 +94,11 @@ void myClient::do_read_body() {
                         this->setUsername(name_qstring);
                         this->setColor(color_qstring);
                         this->setMail(mail_qstring);
-                        this->crdt.setSiteId(idJSON);
+                        this->_crdt.setSiteId(idJSON);
 
                         emit formResultSuccess("LOGIN_SUCCESS");
                     } else {
-                        qDebug() << "Wrong user or password" << endl;
+                        qDebug() << "Wrong user or password" << Qt::endl;
                         emit formResultFailure("LOGIN_FAILURE");
                     }
                 } else if(opJSON == "SIGNUP_RESPONSE") {
@@ -136,7 +136,7 @@ void myClient::do_read_body() {
                         emit removeRemoteCursor(db_usernameJSON);
                         emit getUserOffline(db_mapJSON);
                     } else {
-                        qDebug() << "Something went wrong with db" << endl;
+                        qDebug() << "Something went wrong with db" << Qt::endl;
                     }
                 } else if(opJSON == "GET_USER_ONLINE_RESPONSE") {
                     std::string db_responseJSON;
@@ -148,7 +148,7 @@ void myClient::do_read_body() {
                         jsonUtility::from_json_user_offline(jdata_in, db_usernameJSON, db_mapJSON);
                         emit getUserOnline(db_mapJSON);
                     } else {
-                        qDebug() << "Something went wrong with db" << endl;
+                        qDebug() << "Something went wrong with db" << Qt::endl;
                     }
                 } else if(opJSON == "LOGOUTURI_RESPONSE") {
                     std::string db_responseJSON;
@@ -170,7 +170,7 @@ void myClient::do_read_body() {
 
                         //Update client data
                         this->setFileURI(uriQString);
-                        this->crdt.setSymbols(std::vector<symbol>());
+                        this->_crdt.setSymbols(std::vector<symbol>());
                         emit opResultSuccess("NEWFILE_SUCCESS");
                     } else
                         emit opResultFailure("NEWFILE_FAILURE");
@@ -184,12 +184,12 @@ void myClient::do_read_body() {
                         jsonUtility::from_json_symbols(jdata_in, symbolsJSON);
 
                         //Update client data
-                        this->crdt.setSymbols(symbolsJSON);
+                        this->_crdt.setSymbols(symbolsJSON);
 
                         emit opResultSuccess("OPENFILE_SUCCESS");
                     } else if(db_responseJSON == "OPENFILE_FILE_EMPTY") {
                         //Update client data
-                        this->crdt.setSymbols(std::vector<symbol>());
+                        this->_crdt.setSymbols(std::vector<symbol>());
                         emit opResultSuccess("OPENFILE_SUCCESS");
                     } else
                         emit opResultFailure("OPENFILE_FAILURE");
@@ -213,9 +213,9 @@ void myClient::do_read_body() {
 
                         //Update client data
                         this->setFilename(QString::fromStdString(filenameJSON));
-                        this->crdt.setSymbols(symbolsJSON);
+                        this->_crdt.setSymbols(symbolsJSON);
 
-                        qDebug() << "OPENWITHURI success" << endl;
+                        qDebug() << "OPENWITHURI success" << Qt::endl;
                         emit opResultSuccess("OPENWITHURI_SUCCESS");
                     } else if(db_responseJSON == "OPENFILE_FILE_EMPTY") {
                         std::string filenameJSON;
@@ -223,10 +223,10 @@ void myClient::do_read_body() {
 
                         //Update client data
                         this->setFilename(QString::fromStdString(filenameJSON));
-                        this->crdt.setSymbols(std::vector<symbol>());
+                        this->_crdt.setSymbols(std::vector<symbol>());
                         emit opResultSuccess("OPENFILE_SUCCESS");
                     } else {
-                        qDebug() << "Something went wrong" << endl;
+                        qDebug() << "Something went wrong" << Qt::endl;
                         emit opResultFailure("OPENWITHURI_FAILURE");
                     }
                 } else if(opJSON == "LISTFILE_RESPONSE") {
@@ -250,13 +250,13 @@ void myClient::do_read_body() {
                         }
                         emit listFileResult(files);
 
-                        qDebug() << "Listfile success" << endl;
+                        qDebug() << "Listfile success" << Qt::endl;
                         emit opResultSuccess("LISTFILE_SUCCESS");
                     } else if (db_responseJSON == "LIST_DOESNT_EXIST"){
-                        qDebug() << "Non ha nessuna lista di file" << endl;
+                        qDebug() << "Non ha nessuna lista di file" << Qt::endl;
                         emit opResultFailure("LISTFILE_FAILURE_LISTNOTEXIST");
                     } else {
-                        qDebug() << "Something went wrong" << endl;
+                        qDebug() << "Something went wrong" << Qt::endl;
                         emit opResultFailure("LISTFILE_FAILURE");
                     }
                 } else if(opJSON == "INVITE_URI_RESPONSE") {
@@ -281,7 +281,7 @@ void myClient::do_read_body() {
                     jsonUtility::from_json_insertion(jdata_in, symbolJSON, indexEditorJSON);
 
                     //process received symbol and retrieve new calculated index
-                    int newIndex = this->crdt.process(0, indexEditorJSON, symbolJSON);
+                    int newIndex = this->_crdt.process(0, indexEditorJSON, symbolJSON);
 
                     std::pair<int, wchar_t> tuple = std::make_pair(newIndex, symbolJSON.getLetter());
                     emit insertSymbol(tuple, symbolJSON.getStyle());
@@ -303,7 +303,7 @@ void myClient::do_read_body() {
                         symbols.push_back(*s);
 
                         //process received symbol and retrieve new calculated index
-                        newIndex = this->crdt.process(0, newIndex, *s);
+                        newIndex = this->_crdt.process(0, newIndex, *s);
 
                         std::pair<int, wchar_t> tuple = std::make_pair(newIndex, s->getLetter());
                         emit insertSymbol(tuple, s->getStyle());
@@ -332,7 +332,7 @@ void myClient::do_read_body() {
                     int newIndex;
                     for(const sId& id : symbolsId) {
                         //process received symbol and retrieve new calculated index
-                        newIndex = this->crdt.processErase(id);
+                        newIndex = this->_crdt.processErase(id);
                         if(newIndex != -1) {
                             emit eraseSymbols(newIndex, newIndex+1);
                         }
@@ -344,7 +344,7 @@ void myClient::do_read_body() {
                     int newIndex;
                     for(const sId& id : symbolsId) {
                         //process received symbol and retrieve new calculated index
-                        newIndex = this->crdt.processFormat(id, formatJSON);
+                        newIndex = this->_crdt.processFormat(id, formatJSON);
                         if(newIndex != -1) {
                             emit formatSymbols(newIndex, newIndex+1, formatJSON);
                         }
@@ -356,7 +356,7 @@ void myClient::do_read_body() {
                     int newIndex;
                     for(const sId& id : symbolsId) {
                         //process received symbol and retrieve new calculated index
-                        newIndex = this->crdt.processFontSize(id, fontSizeJSON);
+                        newIndex = this->_crdt.processFontSize(id, fontSizeJSON);
                         if(newIndex != -1) {
                             emit changeFontSize(newIndex, newIndex+1, fontSizeJSON);
                         }
@@ -368,7 +368,7 @@ void myClient::do_read_body() {
                     int newIndex;
                     for(const sId& id : symbolsId) {
                         //process received symbol and retrieve new calculated index
-                        newIndex = this->crdt.processFontFamily(id, fontFamilyJSON);
+                        newIndex = this->_crdt.processFontFamily(id, fontFamilyJSON);
                         if(newIndex != -1) {
                             emit changeFontFamily(newIndex, newIndex+1, fontFamilyJSON);
                         }
@@ -384,7 +384,7 @@ void myClient::do_read_body() {
                     else {
                         for(const sId& id : symbolsId) {
                             //process received symbol and retrieve new calculated index
-                            newIndex = this->crdt.processAlignment(id, alignmentJSON);
+                            newIndex = this->_crdt.processAlignment(id, alignmentJSON);
                             if(newIndex != -1) {
                                 emit changeAlignment(newIndex, newIndex+1, alignmentJSON);
                             }
@@ -392,7 +392,7 @@ void myClient::do_read_body() {
                     }
                 }
                 else {
-                    qDebug() << "Something went wrong" << endl;
+                    qDebug() << "Something went wrong" << Qt::endl;
                     emit opResultFailure("RESPONSE_FAILURE");
                 }
                 fullBody = "";
@@ -405,7 +405,7 @@ void myClient::do_read_body() {
             }
         }
         else {
-            qDebug() << ec.message().c_str() << endl;
+            qDebug() << ec.message().c_str() << Qt::endl;
             closeConnection();
         }
     });
@@ -421,14 +421,14 @@ void myClient::do_write() {
                              boost::asio::buffer(write_msgs_.front().data(), write_msgs_.front().length()+1),
                              [this](boost::system::error_code ec, std::size_t /*length*/) {
          if (!ec) {
-             qDebug() << "Sent:" << write_msgs_.front().data() << "END" << endl;
+             qDebug() << "Sent:" << write_msgs_.front().data() << "END" << Qt::endl;
              write_msgs_.pop_front();
              if (!write_msgs_.empty()) {
                  do_write();
              }
          }
          else {
-             qDebug() << ec.message().c_str() << endl;
+             qDebug() << ec.message().c_str() << Qt::endl;
              closeConnection();
          }
      });

@@ -1,4 +1,4 @@
-QT       += core gui sql printsupport
+QT       += core gui sql printsupport core5compat
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -96,3 +96,20 @@ win32 {
             -lboost_thread-mgw73-mt-x64-1_66 \
             -lws2_32
 }
+
+unix
+{
+INCLUDEPATH+= /usr/local/boost/include
+#DEPENDPATH+= /usr/local/boost/lib
+#LIBS+= -lboost_serialization\
+#-lboost_filesystem\
+#-lbboost_thread
+
+
+
+}
+
+unix:!macx: LIBS += -L$$PWD/../../../../../usr/local/boost/lib/ -lboost_thread -lboost_serialization -lboost_filesystem
+
+INCLUDEPATH += $$PWD/../../../../../usr/local/boost/include
+DEPENDPATH += $$PWD/../../../../../usr/local/boost/include

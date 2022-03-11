@@ -51,7 +51,7 @@ EditorWindow::EditorWindow(myClient* client, QWidget *parent): QMainWindow(paren
     hideLastAddedItem(ui->fontFamilyBox);
     qRegisterMetaType<std::vector<symbol>>("std::vector<symbol>");
     qRegisterMetaType<myCollabColorsMap>("std::map<std::string,std::pair<std::string,bool>");
-    showSymbolsAt(0, _client->crdt.getSymbols());
+    showSymbolsAt(0, _client->_crdt.getSymbols());
     this->installEventFilter(this);
     ui->RealTextEdit->installEventFilter(this);
     collabColorsRequest(_client->getFileURI());
@@ -567,7 +567,7 @@ void EditorWindow::on_buttonCut_clicked() {
         changeNextCharsAlignment(cursor, startIndex, endIndex);
 
         //Update symbols of the client
-        std::vector<sId> symbolsId = _client->crdt.localErase(startIndex, endIndex);
+        std::vector<sId> symbolsId = _client->_crdt.localErase(startIndex, endIndex);
 
         removeCharRequest(symbolsId);
         ui->RealTextEdit->cut();
@@ -589,7 +589,7 @@ void EditorWindow::on_buttonPaste_clicked() {
             changeNextCharsAlignment(cursor, startIndex, endIndex);
 
             //Update symbols of the client
-            std::vector<sId> symbolsId = _client->crdt.localErase(startIndex, endIndex);
+            std::vector<sId> symbolsId = _client->_crdt.localErase(startIndex, endIndex);
 
             removeCharRequest(symbolsId);
         }
@@ -803,7 +803,7 @@ void EditorWindow::on_RealTextEdit_cursorPositionChanged() {
 
 void EditorWindow::on_RealTextEdit_textChanged() {
     int charCount = ui->RealTextEdit->toPlainText().count();
-    int wordCount = ui->RealTextEdit->toPlainText().split(QRegExp("(\\s|\\n|\\r)+"), QString::SkipEmptyParts).count();
+    int wordCount = ui->RealTextEdit->toPlainText().split(QRegularExpression("(\\s|\\n|\\r)+"), Qt::SkipEmptyParts).count();
     int lineCount = ui->RealTextEdit->document()->blockCount();
     QString ZaChar = "Caratteri: "+QString::number(charCount);
     QString ZaLine;
@@ -957,7 +957,7 @@ bool EditorWindow::eventFilter(QObject *obj, QEvent *ev) {
                 changeNextCharsAlignment(cursor, startIndex, endIndex);
 
                 //Update symbols of the client
-                std::vector<sId> symbolsId = _client->crdt.localErase(startIndex, endIndex);
+                std::vector<sId> symbolsId = _client->_crdt.localErase(startIndex, endIndex);
 
                 removeCharRequest(symbolsId);
             }
@@ -980,7 +980,7 @@ bool EditorWindow::eventFilter(QObject *obj, QEvent *ev) {
                     changeNextCharsAlignment(cursor, startIndex, endIndex);
 
                     //Update symbols of the client
-                    std::vector<sId> symbolsId = _client->crdt.localErase(startIndex, endIndex);
+                    std::vector<sId> symbolsId = _client->_crdt.localErase(startIndex, endIndex);
 
                     removeCharRequest(symbolsId);
                 }
@@ -1105,7 +1105,7 @@ bool EditorWindow::eventFilter(QObject *obj, QEvent *ev) {
                 ui->fontFamilyBox->setCurrentText(f.fontFamily());
 
                 //update symbols of the client
-                std::vector<sId> symbolsId = _client->crdt.localErase(startIndex, endIndex);
+                std::vector<sId> symbolsId = _client->_crdt.localErase(startIndex, endIndex);
 
                 //Serialize data
                 json j;
@@ -1145,7 +1145,7 @@ bool EditorWindow::eventFilter(QObject *obj, QEvent *ev) {
             }
 
             //update symbols of the client
-            symbol s = _client->crdt.localInsert(pos, c, getCurCharStyle());
+            symbol s = _client->_crdt.localInsert(pos, c, getCurCharStyle());
 
             //Serialize data
             json j;
@@ -1180,7 +1180,7 @@ bool EditorWindow::eventFilter(QObject *obj, QEvent *ev) {
                 changeNextCharsAlignment(cursor, startIndex, endIndex);
 
                 //Update symbols of the client
-                std::vector<sId> symbolsId = _client->crdt.localErase(startIndex, endIndex);
+                std::vector<sId> symbolsId = _client->_crdt.localErase(startIndex, endIndex);
 
                 removeCharRequest(symbolsId);
             }
@@ -1188,7 +1188,7 @@ bool EditorWindow::eventFilter(QObject *obj, QEvent *ev) {
                 changeNextCharsAlignment(cursor, pos-1, pos);
 
                 //Update symbols of the client
-                std::vector<sId> symbolsId = _client->crdt.localErase(pos-1, pos);
+                std::vector<sId> symbolsId = _client->_crdt.localErase(pos-1, pos);
 
                 removeCharRequest(symbolsId);
             }
@@ -1218,7 +1218,7 @@ bool EditorWindow::eventFilter(QObject *obj, QEvent *ev) {
                 changeNextCharsAlignment(cursor, startIndex, endIndex);
 
                 //Update symbols of the client
-                std::vector<sId> symbolsId = _client->crdt.localErase(startIndex, endIndex);
+                std::vector<sId> symbolsId = _client->_crdt.localErase(startIndex, endIndex);
 
                 removeCharRequest(symbolsId);
             }
@@ -1226,7 +1226,7 @@ bool EditorWindow::eventFilter(QObject *obj, QEvent *ev) {
                 changeNextCharsAlignment(cursor, pos, pos+1);
 
                 //Update symbols of the client
-                std::vector<sId> symbolsId = _client->crdt.localErase(pos, pos+1);
+                std::vector<sId> symbolsId = _client->_crdt.localErase(pos, pos+1);
 
                 removeCharRequest(symbolsId);
             }
@@ -2556,7 +2556,7 @@ void EditorWindow::showSymbolsAt(int firstIndex, std::vector<symbol> symbols) {
             /* Insert (formatted) char */
             c.setPosition(pos);
             c.setCharFormat(newFormat);
-            c.insertText(static_cast<QString>(letter));
+            c.insertText(static_cast<QChar>(letter));
             c.movePosition(QTextCursor::Right);
             c.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
             c.setBlockFormat(newBlockFormat);
@@ -2569,7 +2569,7 @@ void EditorWindow::showSymbolsAt(int firstIndex, std::vector<symbol> symbols) {
             /* Insert (formatted) char */
             c.setPosition(pos);
             c.setCharFormat(newFormat);
-            c.insertText(static_cast<QString>(letter));
+            c.insertText(QChar(letter));
             c.movePosition(QTextCursor::Right);
             c.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
             c.setBlockFormat(newBlockFormat);
@@ -2623,7 +2623,7 @@ void EditorWindow::showSymbol(std::pair<int, wchar_t> tuple, symbolStyle style) 
         /* Insert (formatted) char */
         cursor.setPosition(pos);
         cursor.setCharFormat(format);
-        cursor.insertText(static_cast<QString>(c));
+        cursor.insertText(static_cast<QChar>(c));
         cursor.movePosition(QTextCursor::Right);
         cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
         cursor.setBlockFormat(newBlockFormat);
@@ -2636,7 +2636,7 @@ void EditorWindow::showSymbol(std::pair<int, wchar_t> tuple, symbolStyle style) 
         /* Insert (formatted) char */
         cursor.setPosition(pos);
         cursor.setCharFormat(format);
-        cursor.insertText(static_cast<QString>(c));
+        cursor.insertText(static_cast<QChar>(c));
         cursor.movePosition(QTextCursor::Right);
         cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
         cursor.setBlockFormat(newBlockFormat);
@@ -2653,7 +2653,7 @@ void EditorWindow::showSymbol(std::pair<int, wchar_t> tuple, symbolStyle style) 
     cursor.endEditBlock();
     ui->RealTextEdit->setTextCursor(cursor);
 
-    qDebug() << "Written in pos: " << pos << endl;
+    qDebug() << "Written in pos: " << pos << Qt::endl;
     ui->RealTextEdit->setFocus(); //Return focus to textedit
 }
 
@@ -2681,7 +2681,7 @@ void EditorWindow::eraseSymbols(int startIndex, int endIndex) {
 
     cursor.endEditBlock();
 
-    qDebug() << "Deleted char range" << endl;
+    qDebug() << "Deleted char range" << Qt::endl;
     ui->RealTextEdit->setFocus(); //Return focus to textedit
 }
 
@@ -2709,7 +2709,7 @@ void EditorWindow::formatSymbols(int startIndex, int endIndex, int format) {
     }
     cursor.endEditBlock();
 
-    qDebug() << "Formatted char range" << endl;
+    qDebug() << "Formatted char range" << Qt::endl;
     ui->RealTextEdit->setFocus();
 }
 
@@ -2757,7 +2757,7 @@ void EditorWindow::changeFontSize(int startIndex, int endIndex, int fontSize) {
     }
     cursor.endEditBlock();
 
-    qDebug() << "Changed font size in char range" << endl;
+    qDebug() << "Changed font size in char range" << Qt::endl;
     ui->RealTextEdit->setFocus();
 }
 
@@ -2780,7 +2780,7 @@ void EditorWindow::changeFontFamily(int startIndex, int endIndex, std::string fo
     }
     cursor.endEditBlock();
 
-    qDebug() << "Changed font family in char range" << endl;
+    qDebug() << "Changed font family in char range" << Qt::endl;
     ui->RealTextEdit->setFocus();
 }
 
@@ -2810,7 +2810,7 @@ void EditorWindow::changeAlignment(int startBlock, int endBlock, int alignment) 
     ui->RealTextEdit->setAlignment(cursor.blockFormat().alignment());
     ui->RealTextEdit->viewport()->update();
 
-    qDebug() << "Changed alignment" << endl;
+    qDebug() << "Changed alignment" << Qt::endl;
     ui->RealTextEdit->setFocus();
 }
 
@@ -3036,7 +3036,7 @@ void EditorWindow::sendFormatRequest(int format) {
         int endIndex = cursor.selectionEnd();
 
         //Update symbols of the client
-        std::vector<sId> symbolsId = _client->crdt.localFormat(startIndex, endIndex, format);
+        std::vector<sId> symbolsId = _client->_crdt.localFormat(startIndex, endIndex, format);
 
         //Serialize data
         json j;
@@ -3065,7 +3065,7 @@ void EditorWindow::sendFontChangeRequest(int fontSize) {
         int endIndex = cursor.selectionEnd();
 
         //Update symbols of the client
-        std::vector<sId> symbolsId = _client->crdt.localFontSizeChange(startIndex, endIndex, fontSize);
+        std::vector<sId> symbolsId = _client->_crdt.localFontSizeChange(startIndex, endIndex, fontSize);
 
         //Serialize data
         json j;
@@ -3079,7 +3079,7 @@ void EditorWindow::sendFontChangeRequest(int fontSize) {
 
 void EditorWindow::sendAlignChangeRequest(int blockStart, int blockEnd, int alignment) {
     //Update symbols of the client
-    std::vector<sId> symbolsId = _client->crdt.localAlignmentChange(blockStart, blockEnd, alignment);
+    std::vector<sId> symbolsId = _client->_crdt.localAlignmentChange(blockStart, blockEnd, alignment);
 
     //Serialize data
     json j;
@@ -3097,7 +3097,7 @@ void EditorWindow::sendFontChangeRequest(std::string fontFamily) {
         int endIndex = cursor.selectionEnd();
 
         //Update symbols of the client
-        std::vector<sId> symbolsId = _client->crdt.localFontFamilyChange(startIndex, endIndex, fontFamily);
+        std::vector<sId> symbolsId = _client->_crdt.localFontFamilyChange(startIndex, endIndex, fontFamily);
 
         //Serialize data
         json j;
@@ -3262,7 +3262,7 @@ void EditorWindow::alignSingleBlock(QTextCursor& cursor, Qt::AlignmentFlag align
         //update symbols of the client
         cursor.movePosition(QTextCursor::End);
         int lastPos = cursor.position();
-        int vecSize = static_cast<int>(_client->crdt.getSymbols().size());
+        int vecSize = static_cast<int>(_client->_crdt.getSymbols().size());
 
         bool addNewline = false;
         symbol s;
@@ -3288,11 +3288,11 @@ void EditorWindow::alignSingleBlock(QTextCursor& cursor, Qt::AlignmentFlag align
             ui->RealTextEdit->setTextCursor(cursor);
 
             /* Insert (formatted) char in symbol vector */
-            s = _client->crdt.localInsert(lastPos, '\r', style);
+            s = _client->_crdt.localInsert(lastPos, '\r', style);
             addNewline = true;
         }
         else if(cursor.position() >= lastPos) {
-            symbolStyle style = _client->crdt.getSymbols().at(vecSize-1).getStyle();
+            symbolStyle style = _client->_crdt.getSymbols().at(vecSize-1).getStyle();
             QTextCharFormat format;
 
             /* Get style */
@@ -3310,7 +3310,7 @@ void EditorWindow::alignSingleBlock(QTextCursor& cursor, Qt::AlignmentFlag align
             ui->RealTextEdit->setTextCursor(cursor);
 
             /* Insert (formatted) char in symbol vector */
-            s = _client->crdt.localInsert(vecSize, '\r', style);
+            s = _client->_crdt.localInsert(vecSize, '\r', style);
             addNewline = true;
         }
 
@@ -3396,10 +3396,10 @@ std::pair<int,int> EditorWindow::alignBlocks(int startIndex, int endIndex, const
     if(lastBlockEmpty || ui->RealTextEdit->document()->lastBlock() == tempCursor.block()) {
         int oldPos = tempCursor.position();
         tempCursor.movePosition(QTextCursor::End);
-        int vecSize = static_cast<int>(_client->crdt.getSymbols().size());
+        int vecSize = static_cast<int>(_client->_crdt.getSymbols().size());
         symbol s;
 
-        symbolStyle style = _client->crdt.getSymbols().at(vecSize-1).getStyle();
+        symbolStyle style = _client->_crdt.getSymbols().at(vecSize-1).getStyle();
         QTextCharFormat format;
 
         /* Get style */
@@ -3417,7 +3417,7 @@ std::pair<int,int> EditorWindow::alignBlocks(int startIndex, int endIndex, const
         ui->RealTextEdit->setTextCursor(cursor);
 
         /* Insert (formatted) char in symbol vector */
-        s = _client->crdt.localInsert(vecSize, '\r', style);
+        s = _client->_crdt.localInsert(vecSize, '\r', style);
 
         //Serialize data
         json j;
@@ -3532,7 +3532,7 @@ void EditorWindow::insertCharRangeRequest(int pos, bool cursorHasSelection) noex
         }
 
         //Update symbols of the client
-        std::vector<symbol> symbols = _client->crdt.localInsert(initialPos, infoSymbols);
+        std::vector<symbol> symbols = _client->_crdt.localInsert(initialPos, infoSymbols);
 
         //Serialize data
         json j;
@@ -3543,35 +3543,43 @@ void EditorWindow::insertCharRangeRequest(int pos, bool cursorHasSelection) noex
         //Send data (header and body)
         _client->sendRequestMsg(req);
     } else {
-        qDebug() << "Cannot paste this." << endl;
+        qDebug() << "Cannot paste this." << Qt::endl;
     }
 }
 
 
 QChar EditorWindow::SimplifySingleCharForSorting(QChar c, bool changeToLowerCase) {
 
-    if ( ( c >= 0xC0 && c <= 0xC5 ) || ( c >= 0xE1 && c <= 0xE5 ) || c == 0xAA )
-        return ( ( c >= 0xC0 && c <= 0xC5 ) && !changeToLowerCase ) ? 'A' : 'a';
-    if ( ( c >= 0xC8 && c <= 0xCB ) || ( c >= 0xE8 && c <= 0xEB ) )
-        return ( c > 0xCB || changeToLowerCase ) ? 'e' : 'E';
-    if ( ( c >= 0xCC && c <= 0xCF ) || ( c >= 0xEC && c <= 0xEF ) )
-        return ( c > 0xCF || changeToLowerCase ) ? 'i' : 'I';
-    if ( ( c >= 0xD2 && c <= 0xD6 ) || ( c >= 0xF2 && c <= 0xF6 ) || c == 0xBA )
-        return ( ( c >= 0xD2 && c <= 0xD6 ) && !changeToLowerCase ) ? 'O' : 'o';
-    if ( ( c >= 0xD9 && c <= 0xDC ) || ( c >= 0xF9 && c <= 0xFC ) )
-        return ( c > 0xDC || changeToLowerCase ) ? 'u' : 'U';
-    if ( c == 0xA9 || c == 0xC7 || c == 0xE7 )
-        return ( c == 0xC7 && !changeToLowerCase ) ? 'C' : 'c';
-    if ( c == 0xD1 || c == 0xF1 )
-        return ( c == 0xD1 && !changeToLowerCase ) ? 'N' : 'n';
-    if ( c == 0xAE )
+    if ( ( c >= QChar(0xC0) && c <= QChar(0xC5) ) || ( c >= QChar(0xE1) && c <= QChar(0xE5) ) || c == QChar(0xAA) )
+        return ( ( c >= QChar(0xC0) && c <= QChar(0xC5) ) && !changeToLowerCase ) ? 'A' : 'a';
+
+    if ( ( c >= QChar(0xC8) && c <= QChar(0xCB) ) || ( c >= QChar(0xE8) && c <= QChar(0xEB) ) )
+        return ( c > QChar(0xCB) || changeToLowerCase ) ? 'e' : 'E';
+
+    if ( ( c >= QChar(0xCC) && c <= QChar(0xCF) ) || ( c >= QChar(0xEC) && c <= QChar(0xEF) ) )
+        return ( c > QChar(0xCF) || changeToLowerCase ) ? 'i' : 'I';
+
+    if ( ( c >= QChar(0xD2) && c <= QChar(0xD6) ) || ( c >= QChar(0xF2) && c <= QChar(0xF6) ) || c == QChar(0xBA) )
+        return ( ( c >= QChar(0xD2) && c <= QChar(0xD6) ) && !changeToLowerCase ) ? 'O' : 'o';
+
+    if ( ( c >= QChar(0xD9) && c <= QChar(0xDC) ) || ( c >= QChar(0xF9) && c <= QChar(0xFC) ) )
+        return ( c > QChar(0xDC) || changeToLowerCase ) ? 'u' : 'U';
+
+    if ( c == QChar(0xA9) || c ==QChar(0xC7) || c == QChar(0xE7) )
+        return ( c == QChar(0xC7) && !changeToLowerCase ) ? 'C' : 'c';
+
+    if ( c == QChar(0xD1) || c == QChar(0xF1) )
+        return ( c == QChar(0xD1) && !changeToLowerCase ) ? 'N' : 'n';
+
+    if ( c == QChar(0xAE) )
         return 'r';
-    if ( c == 0xDF )
+    if ( c ==QChar( 0xDF) )
         return 's';
-    if ( c == 0x8E || c == 0x9E )
-        return ( c == 0x8E && !changeToLowerCase ) ? 'Z' : 'z';
-    if ( c == 0x9F || c == 0xDD || c == 0xFD || c == 0xFF )
-        return ( ( c == 0x9F || c == 0xDD ) && !changeToLowerCase ) ? 'Y' : 'y';
+
+    if ( c == QChar(0x8E) || c == QChar(0x9E) )
+        return ( c ==QChar(0x8E) && !changeToLowerCase ) ? 'Z' : 'z';
+    if ( c ==QChar(0x9F) || c == QChar(0xDD) || c == QChar(0xFD) || c == QChar(0xFF) )
+        return ( ( c == QChar(0x9F) || c == QChar(0xDD) ) && !changeToLowerCase ) ? 'Y' : 'y';
     return c;
 }
 

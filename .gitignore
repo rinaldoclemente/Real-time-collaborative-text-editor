@@ -1,3 +1,6 @@
+ServerModule/build/
+build-ClientModule-Desktop_Qt_6_1_3_GCC_64bit-Debug/
+*.sqlite
 ### C++ template
 # Compiled Object files
 *.slo
