@@ -30,7 +30,7 @@ class myClient : public QObject
 public:
     myClient();
     virtual ~myClient();
-    crdt crdt;
+    crdt _crdt;
     void do_connect();
     bool getStatus();
     QString getUsername();

@@ -9,6 +9,7 @@
 #include <QClipboard>
 #include <QRegularExpression>
 #include <QPainter>
+#include <QPainterPath>
 
 void MyQTextEdit::insertFromMimeData(const QMimeData* source) {
     if (source->hasText() && !source->hasImage() && !source->hasUrls() && !source->html().contains("<a href")) {

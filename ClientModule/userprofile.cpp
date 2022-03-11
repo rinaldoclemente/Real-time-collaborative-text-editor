@@ -2,6 +2,7 @@
 #include "ui_userprofile.h"
 #include <QMessageBox>
 #include <QDebug>
+#include <QTextCodec>
 
 UserProfile::UserProfile(myClient* client, QString nome, QString mail,int files, int myFiles, QWidget *parent):
     QWidget(parent, Qt::FramelessWindowHint | Qt::WindowSystemMenuHint), ui(new Ui::UserProfile), _client(client) {
@@ -73,27 +74,34 @@ void UserProfile::mouseMoveEvent(QMouseEvent *evt) {
 
 QChar UserProfile::SimplifySingleCharForSorting(QChar c, bool changeToLowerCase){
 
-    if ( ( c >= 0xC0 && c <= 0xC5 ) || ( c >= 0xE1 && c <= 0xE5 ) || c == 0xAA )
-        return ( ( c >= 0xC0 && c <= 0xC5 ) && !changeToLowerCase ) ? 'A' : 'a';
-    if ( ( c >= 0xC8 && c <= 0xCB ) || ( c >= 0xE8 && c <= 0xEB ) )
-        return ( c > 0xCB || changeToLowerCase ) ? 'e' : 'E';
-    if ( ( c >= 0xCC && c <= 0xCF ) || ( c >= 0xEC && c <= 0xEF ) )
-        return ( c > 0xCF || changeToLowerCase ) ? 'i' : 'I';
-    if ( ( c >= 0xD2 && c <= 0xD6 ) || ( c >= 0xF2 && c <= 0xF6 ) || c == 0xBA )
-        return ( ( c >= 0xD2 && c <= 0xD6 ) && !changeToLowerCase ) ? 'O' : 'o';
-    if ( ( c >= 0xD9 && c <= 0xDC ) || ( c >= 0xF9 && c <= 0xFC ) )
-        return ( c > 0xDC || changeToLowerCase ) ? 'u' : 'U';
-    if ( c == 0xA9 || c == 0xC7 || c == 0xE7 )
-        return ( c == 0xC7 && !changeToLowerCase ) ? 'C' : 'c';
-    if ( c == 0xD1 || c == 0xF1 )
-        return ( c == 0xD1 && !changeToLowerCase ) ? 'N' : 'n';
-    if ( c == 0xAE )
+    if ( ( c >= QChar(0xC0) && c <= QChar(0xC5) ) || ( c >= QChar(0xE1) && c <= QChar(0xE5) ) || c == QChar(0xAA) )
+        return ( ( c >= QChar(0xC0) && c <= QChar(0xC5) ) && !changeToLowerCase ) ? 'A' : 'a';
+
+    if ( ( c >= QChar(0xC8) && c <= QChar(0xCB) ) || ( c >=QChar( 0xE8) && c <= QChar(0xEB) ) )
+        return ( c > QChar(0xCB) || changeToLowerCase ) ? 'e' : 'E';
+
+    if ( ( c >= QChar(0xCC) && c <= QChar(0xCF) ) || ( c >= QChar(0xEC) && c <= QChar(0xEF) ) )
+        return ( c > QChar(0xCF) || changeToLowerCase ) ? 'i' : 'I';
+
+    if ( ( c >=QChar(0xD2) && c <= QChar(0xD6) ) || ( c >= QChar(0xF2) && c <= QChar(0xF6) ) || c == QChar(0xBA) )
+        return ( ( c >= QChar(0xD2) && c <= QChar(0xD6) ) && !changeToLowerCase ) ? 'O' : 'o';
+
+    if ( ( c >= QChar(0xD9) && c <= QChar(0xDC) ) || ( c >= QChar(0xF9) && c <= QChar(0xFC) ) )
+        return ( c > QChar(0xDC) || changeToLowerCase ) ? 'u' : 'U';
+
+    if ( c == QChar(0xA9) || c == QChar(0xC7) || c == QChar(0xE7) )
+        return ( c == QChar(0xC7) && !changeToLowerCase ) ? 'C' : 'c';
+
+    if ( c ==QChar(0xD1) || c == QChar(0xF1) )
+        return ( c == QChar(0xD1) && !changeToLowerCase ) ? 'N' : 'n';
+
+    if ( c == QChar(0xAE) )
         return 'r';
-    if ( c == 0xDF )
+    if ( c == QChar(0xDF) )
         return 's';
-    if ( c == 0x8E || c == 0x9E )
-        return ( c == 0x8E && !changeToLowerCase ) ? 'Z' : 'z';
-    if ( c == 0x9F || c == 0xDD || c == 0xFD || c == 0xFF )
-        return ( ( c == 0x9F || c == 0xDD ) && !changeToLowerCase ) ? 'Y' : 'y';
+    if ( c == QChar(0x8E) || c == QChar(0x9E) )
+        return ( c == QChar(0x8E) && !changeToLowerCase ) ? 'Z' : 'z';
+    if ( c == QChar(0x9F) || c == QChar(0xDD) || c == QChar(0xFD) || c == QChar(0xFF) )
+        return ( ( c == QChar(0x9F) || c == QChar(0xDD) ) && !changeToLowerCase ) ? 'Y' : 'y';
     return c;
 }

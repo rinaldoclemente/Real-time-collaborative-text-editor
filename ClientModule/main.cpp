@@ -1,5 +1,6 @@
 #include <boost/asio.hpp>
 #include "startwindow.h"
+#include <QTextCodec>
 #include <QApplication>
 
 int main(int argc, char *argv[]){
